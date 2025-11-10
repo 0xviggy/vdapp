@@ -1,0 +1,26 @@
+# Todo List for E2E DEX on Arbitrum
+
+- [ ] Initialize project structure
+  - Set up Foundry/Hardhat for contracts, Next.js for frontend, and CI/CD folders.
+- [ ] Develop core DEX smart contracts
+  - Implement swap, liquidity pool, and router contracts (UUPS proxy if needed).
+- [ ] Implement token contracts
+  - ERC20 tokens for trading and liquidity provision.
+- [ ] Add contract security features
+  - Gas optimizations, access control, reentrancy guards, pause mechanism.
+- [ ] Write and run contract tests
+  - Unit, fuzz, invariant, and integration tests for DEX logic. Achieve >95% coverage.
+- [ ] Set up Next.js frontend
+  - Initialize app, configure TypeScript strict mode, Tailwind CSS, wallet connection.
+- [ ] Build DEX UI components
+  - Swap form, liquidity management, transaction status, wallet connect, network switch.
+- [ ] Integrate contract types and web3
+  - Auto-generate TypeScript types from ABIs, set up ethers.js and contract interaction hooks.
+- [ ] Implement frontend and E2E tests
+  - Unit tests with Vitest, E2E tests with Playwright for DEX flows.
+- [ ] Configure CI/CD pipelines
+  - GitHub Actions for contract/frontend testing, contract verification, deployment scripts.
+- [ ] Deploy contracts and frontend
+  - Deploy contracts to Arbitrum testnet/mainnet, verify on block explorers, deploy frontend to Vercel.
+- [ ] Document system and API
+  - Write README, API docs, architecture diagrams, demo materials.
