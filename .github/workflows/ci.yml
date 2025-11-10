@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  contracts-test:
+    name: Foundry Smart Contract Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Foundry
+        run: |
+          curl -L https://foundry.paradigm.xyz | bash
+          source ~/.bashrc
+          foundryup
+      - name: Run Foundry tests
+        run: |
+          cd dex-contracts
+          forge test
+
+  frontend-test:
+    name: Next.js Frontend Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.9.0'
+      - name: Install dependencies
+        run: |
+          cd dex-frontend
+          npm ci
+      - name: Build Next.js app
+        run: |
+          cd dex-frontend
+          npm run build
+      - name: Run Next.js tests
+        run: |
+          cd dex-frontend
+          npm test

@@ -1,0 +1,290 @@
+# Project Setup Commands
+
+This document provides a comprehensive guide to all setup commands used in this DEX project, with detailed explanations for reproducibility and interview preparation. Each section includes the command, its purpose, interview-relevant insights, and troubleshooting tips.
+
+---
+
+## Table of Contents
+1. [Prerequisites](#prerequisites)
+2. [Node.js Setup](#nodejs-setup)
+3. [Foundry Installation](#foundry-installation)
+4. [Smart Contract Setup](#smart-contract-setup)
+5. [Frontend Setup](#frontend-setup)
+6. [Testing Infrastructure](#testing-infrastructure)
+7. [Linting & Code Quality](#linting--code-quality)
+8. [CI/CD Setup](#cicd-setup)
+9. [Version Control](#version-control)
+10. [Interview Tips](#interview-tips)
+
+---
+
+## Prerequisites
+
+### System Requirements
+- **OS:** Linux/macOS (Windows requires WSL)
+- **Git:** Version 2.0+ for version control
+- **curl:** For downloading installation scripts
+- **Build Tools:** gcc, make (for compiling native dependencies)
+
+**Interview Note:** Understanding system requirements demonstrates awareness of cross-platform compatibility and development environment setup, crucial for team collaboration.
+
+---
+
+## Node.js Setup
+
+### Command: `nvm install 20.9.0`
+**Purpose:** Installs Node.js v20.9.0 using Node Version Manager (nvm).
+
+**Why This Version:**
+- Next.js 16+ requires Node.js ≥20.9.0 (LTS)
+- Ensures compatibility with latest React features
+- Supports native ES modules and modern JavaScript syntax
+
+**Interview Insight:** Version management is critical in production. Using nvm allows:
+- Multiple Node versions per system (different projects, different requirements)
+- Easy switching: `nvm use 20.9.0`
+- Team consistency via `.nvmrc` file
+
+### Command: `nvm use 20.9.0`
+**Purpose:** Switches current terminal session to Node.js v20.9.0.
+
+**Alternative:** `nvm alias default 20.9.0` to set as system default.
+
+### Command: `node --version && npm --version`
+**Purpose:** Verifies Node.js and npm installations.
+
+**Expected Output:**
+```
+v20.9.0 (or higher)
+npm 10.x.x
+```
+
+**Troubleshooting:**
+- If version doesn't match: Run `nvm use 20.9.0` again
+- If nvm not found: Add to shell config (`~/.bashrc` or `~/.zshrc`)
+
+---
+
+## Foundry Installation
+
+### Command: `curl -L https://foundry.paradigm.xyz | bash`
+**Purpose:** Downloads and runs the official Foundry installation script. This installs `foundryup`, the Foundry toolchain installer, and updates your shell configuration to add Foundry to your PATH.
+
+**What This Does:**
+1. Downloads the Foundry installer script
+2. Installs `foundryup` binary to `~/.foundry/bin`
+3. Adds Foundry to PATH in shell config file
+4. Creates necessary directories for Foundry tools
+
+**Interview Insight:** Piping curl to bash is common for installer scripts but has security implications. In production:
+- Always verify the source (official Paradigm domain)
+- Consider downloading script first, reviewing, then executing
+- Use checksums/signatures for verification
+
+### Command: `source ~/.bashrc`
+**Purpose:** Reloads bash configuration file to make Foundry tools available in current terminal session.
+
+**Why Needed:**
+- Shell config files are read only at shell startup
+- `source` re-reads the file without restarting terminal
+- Alternative: Open new terminal window
+
+**Shell-Specific Files:**
+- Bash: `~/.bashrc` or `~/.bash_profile`
+- Zsh: `~/.zshrc`
+- Fish: `~/.config/fish/config.fish`
+
+### Command: `foundryup`
+**Purpose:** Installs the complete Foundry toolchain to latest stable versions.
+
+**Tools Installed:**
+1. **forge** - Smart contract compilation, testing, deployment
+2. **cast** - CLI for Ethereum RPC calls, transactions, encoding
+3. **anvil** - Local Ethereum node for testing (similar to Ganache/Hardhat node)
+4. **chisel** - Solidity REPL for rapid prototyping
+
+**Version Verification:**
+```bash
+forge --version  # Expected: forge 0.2.0+
+cast --version
+anvil --version
+```
+
+**Interview Insight:** Foundry is faster than Hardhat due to:
+- Written in Rust (compiled language vs Node.js)
+- Native Solidity compilation (no JavaScript overhead)
+- Parallel test execution
+- Minimal dependencies
+
+**When to Use Foundry vs Hardhat:**
+- **Foundry:** Speed-critical projects, Solidity-first teams, gas optimization work
+- **Hardhat:** JavaScript ecosystem integration, extensive plugin needs, complex deployment scripts
+
+---
+
+## Smart Contract Setup
+
+### Command: `forge init dex-contracts --force`
+**Purpose:** Initializes a new Foundry project with standard directory structure.
+
+**Directory Structure Created:**
+```
+dex-contracts/
+├── foundry.toml       # Foundry configuration
+├── src/               # Smart contracts
+├── test/              # Test files
+├── script/            # Deployment scripts
+└── lib/               # Dependencies (forge-std)
+```
+
+**Flags Explained:**
+- `--force`: Overwrites existing directory (useful for re-initialization)
+- Without flag: Fails if directory exists
+
+**Interview Note:** Project structure follows Foundry conventions:
+- `src/` contains production contracts
+- `test/` mirrors `src/` structure with `.t.sol` suffix
+- `script/` contains deployment/interaction scripts
+- `lib/` manages dependencies via git submodules
+
+### Command: `cd dex-contracts && forge install foundry-rs/forge-std --no-commit`
+**Purpose:** Installs forge-std library (testing utilities and base contracts).
+
+**What forge-std Provides:**
+- `Test.sol` - Base test contract with assertions
+- `console.sol` - Console logging for debugging
+- `Vm.sol` - Cheatcodes interface (time manipulation, impersonation, etc.)
+- `StdCheats.sol` - Common test utilities
+
+**Flags:**
+- `--no-commit`: Doesn't auto-commit the submodule addition
+- Allows manual review before committing
+
+**Interview Insight:** Foundry uses git submodules for dependencies instead of npm:
+- **Pros:** Version-locked, no supply chain attacks, direct source access
+- **Cons:** Requires git knowledge, submodule management complexity
+- **Alternative:** Soldeer (newer package manager for Solidity)
+
+### Command: `forge build`
+**Purpose:** Compiles all Solidity contracts in `src/` directory.
+
+**Output:**
+- Artifacts in `out/` directory (ABI, bytecode, metadata)
+- Compilation errors/warnings
+- Contract size information
+
+**Common Flags:**
+- `--force`: Recompile all contracts (ignore cache)
+- `--sizes`: Display contract sizes (useful for gas optimization)
+- `--optimize`: Enable optimizer with default 200 runs
+
+**Interview Question:** "Why is contract size important?"
+- Ethereum has 24KB contract size limit (EIP-170)
+- Larger contracts cost more gas to deploy
+- Size optimization techniques: libraries, proxy patterns, bytecode optimization
+
+### Command: `forge test`
+**Purpose:** Runs all test contracts in `test/` directory.
+
+**Test Discovery:**
+- Files ending in `.t.sol`
+- Functions starting with `test` prefix
+- Parallel execution by default
+
+**Useful Flags:**
+- `-vvv`: Verbose output (shows gas usage, logs)
+- `--match-test testSwap`: Run specific test
+- `--match-contract DEXPairTest`: Run specific test contract
+- `--gas-report`: Show gas usage per function
+
+**Interview Insight:** Foundry tests run directly in Solidity (no JavaScript wrapper):
+- Faster execution
+- Easier to write complex test scenarios
+- Direct access to EVM features
+- Built-in fuzz testing support
+
+---
+
+## Frontend Setup
+
+**Command:** `npx create-next-app@latest dex-frontend --typescript`
+**Explanation:** Creates a new Next.js app in the dex-frontend directory with TypeScript enabled for strict typing. Prompts for additional options (ESLint, Tailwind CSS, src directory, App Router, Turbopack, import alias). Note: Next.js 16+ requires Node.js >=20.9.0, but the app was created with Node.js 18.19.1. Some features may not work until Node is upgraded.
+
+**Next.js Create App Prompts & Recommended Choices:**
+
+1. **ESLint:**
+	- *Prompt:* Which linter would you like to use?
+	- *Recommended:* ESLint (industry standard for JS/TS linting)
+	- *Interview Note:* Ensures code quality and consistency; highly customizable.
+
+2. **React Compiler:**
+	- *Prompt:* Would you like to use React Compiler?
+	- *Recommended:* Yes (if using React 18+ and want advanced optimizations)
+	- *Interview Note:* React Compiler can optimize rendering and improve performance, but may require latest React features and strict typing.
+
+3. **Tailwind CSS:**
+	- *Prompt:* Would you like to use Tailwind CSS?
+	- *Recommended:* Yes (utility-first CSS framework, speeds up UI development)
+	- *Interview Note:* Tailwind is popular for rapid prototyping and maintainable styles; integrates well with Next.js.
+
+4. **src Directory:**
+	- *Prompt:* Would you like your code inside a `src/` directory?
+	- *Recommended:* Yes (keeps code organized and scalable)
+	- *Interview Note:* Using a `src/` directory is a best practice for larger projects.
+
+5. **App Router:**
+	- *Prompt:* Would you like to use App Router? (recommended)
+	- *Recommended:* Yes (Next.js 13+ feature for file-based routing and layouts)
+	- *Interview Note:* App Router enables advanced routing, layouts, and server components; recommended for new projects.
+
+6. **Turbopack:**
+	- *Prompt:* Would you like to use Turbopack? (recommended)
+	- *Recommended:* Yes (if you want faster builds and hot reloads)
+	- *Interview Note:* Turbopack is Next.js’s new bundler, replacing Webpack for better performance; still experimental but promising.
+
+7. **Import Alias:**
+	- *Prompt:* Would you like to customize the import alias (`@/*` by default)?
+	- *Recommended:* Default (`@/*`) unless you have a specific aliasing scheme.
+	- *Interview Note:* Import aliases simplify module imports and refactoring; `@/*` is a common convention.
+
+**Command:** `cd dex-frontend && npm install --save-dev vitest @testing-library/react @testing-library/jest-dom jsdom`
+**Explanation:** Installs Vitest (a fast, modern test runner for Vite/Next.js projects), React Testing Library (for component testing), Jest DOM (for DOM assertions), and jsdom (for simulating a browser environment in tests). This sets up the frontend for unit/component testing with TypeScript and React.
+
+**File Created:** `dex-frontend/vitest.config.ts`
+**Explanation:** Vitest configuration file for frontend tests. Sets up jsdom environment, enables globals, and includes test files in `src/__tests__`.
+
+**Command:** Add "test": "vitest" to package.json scripts
+**Explanation:** Enables running frontend unit tests with `npm test` using Vitest.
+
+**Command:** Add "type": "module" to dex-frontend/package.json
+**Explanation:** Enables ES module support required by Vitest and Vite, resolving compatibility issues with Node.js and modern test runners.
+
+**Command:** `mkdir -p .github/workflows`
+**Explanation:** Creates the directory structure for GitHub Actions workflows, which will be used for CI/CD automation (testing, deployment, etc.).
+
+**File Created:** `.github/workflows/ci.yml`
+**Explanation:** This GitHub Actions workflow automates CI for both smart contracts and frontend:
+- Runs Foundry tests for contracts on every push/pull request.
+- Builds and tests the Next.js frontend using Node.js 20.9.0.
+- Ensures code quality and fast feedback for both backend and frontend.
+
+**Note:** ESLint and other tooling should be installed locally (as devDependencies) in your project. This ensures consistent versions and configuration for all contributors, reproducible builds, and compatibility with CI/CD. Global installs are discouraged for team or project workflows.
+
+**Command:** `npm install --save-dev eslint`
+**Explanation:** Installs ESLint locally in the project as a devDependency, enabling consistent linting for all contributors and automated systems.
+
+**Command:** `npx eslint --init`
+**Explanation:** Runs the ESLint initialization wizard using the local install, allowing you to set up a configuration tailored for React, TypeScript, and Next.js.
+
+**Recommended ESLint Init Options and Differences:**
+- Lint: `javascript` (recommended for JS/TS projects; you can also choose `typescript` if only TS is used)
+- Use: `problems` (recommended for catching code issues; `style` is for formatting, usually handled by Prettier)
+- Modules: `esm` (recommended for modern projects; `commonjs` is legacy)
+- Framework: `react` (recommended for React/Next.js projects)
+- TypeScript: `Yes` (recommended for strict typing and modern frontend development)
+- Run: `browser` (recommended for frontend apps; choose `node` for backend)
+- Config language: `ts` (recommended for TypeScript projects; `js` is fine for JS-only)
+- Install dependencies: `Yes` (recommended to ensure all required plugins and configs are present)
+- Package manager: `npm` (recommended unless you use yarn/pnpm)
+
+These options ensure ESLint is tailored for a modern React + TypeScript frontend, catching code issues and supporting best practices. Differences from defaults: enables TypeScript, ES modules, React, and browser environment, with a TypeScript config file.

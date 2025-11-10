@@ -1,11 +1,26 @@
 # Todo List for E2E DEX on Arbitrum
 
-- [ ] Initialize project structure
-  - Set up Foundry/Hardhat for contracts, Next.js for frontend, and CI/CD folders.
+## Progress: Phase 1 Complete ✅
+
+- [x] Initialize project structure
+  - ✅ Set up Foundry for contracts
+  - ✅ Set up Next.js for frontend with TypeScript, Tailwind CSS
+  - ✅ Created CI/CD folders with GitHub Actions workflow
+  - ✅ Configured ESLint and Vitest for testing
+  - ✅ Node.js upgraded to v25.1.0 for ES module support
+  - ✅ Comprehensive documentation (README, DEXDesign, setup_commands)
+  
+## Phase 2: Smart Contract Development (In Progress)
+
 - [ ] Develop core DEX smart contracts
-  - Implement swap, liquidity pool, and router contracts (UUPS proxy if needed).
+  - [ ] DEXFactory.sol - Pair creation and registry
+  - [ ] DEXPair.sol - Liquidity pool with constant product AMM
+  - [ ] DEXLibrary.sol - Shared calculation utilities
+  - [ ] DEXRouter.sol - User-facing interface for swaps and liquidity
+  
 - [ ] Implement token contracts
-  - ERC20 tokens for trading and liquidity provision.
+  - [ ] Mock ERC20 tokens for testing (TokenA, TokenB)
+  - [ ] LP token functionality (integrated in DEXPair)
 - [ ] Add contract security features
   - Gas optimizations, access control, reentrancy guards, pause mechanism.
 - [ ] Write and run contract tests
